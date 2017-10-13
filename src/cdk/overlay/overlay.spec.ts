@@ -641,6 +641,40 @@ describe('Overlay', () => {
         .toBeLessThan(children.indexOf(host), 'Expected backdrop to be before the host in the DOM');
     });
 
+    it('should disable pointer events on the backdrop when scrolling', fakeAsync(() => {
+      let overlayRef = overlay.create(config);
+      overlayRef.attach(componentPortal);
+
+      viewContainerFixture.detectChanges();
+      let backdrop = overlayContainerElement.querySelector('.cdk-overlay-backdrop') as HTMLElement;
+
+      expect(backdrop.style.pointerEvents).toBeFalsy();
+
+      dispatchFakeEvent(backdrop, 'wheel');
+
+      expect(backdrop.style.pointerEvents).toBe('none');
+
+      tick(100);
+
+      expect(backdrop.style.pointerEvents).toBeFalsy();
+    }));
+
+    it('should not disable pointer events on the backdrop when scrolling is blocked', () => {
+      config.scrollStrategy = overlay.scrollStrategies.block();
+
+      let overlayRef = overlay.create(config);
+      overlayRef.attach(componentPortal);
+
+      viewContainerFixture.detectChanges();
+      let backdrop = overlayContainerElement.querySelector('.cdk-overlay-backdrop') as HTMLElement;
+
+      expect(backdrop.style.pointerEvents).toBeFalsy();
+
+      dispatchFakeEvent(backdrop, 'wheel');
+
+      expect(backdrop.style.pointerEvents).toBeFalsy();
+    });
+
   });
 
   describe('panelClass', () => {
