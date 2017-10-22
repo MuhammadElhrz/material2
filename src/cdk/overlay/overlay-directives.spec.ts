@@ -4,13 +4,21 @@ import {ComponentFixture, TestBed, async, inject} from '@angular/core/testing';
 import {Directionality} from '@angular/cdk/bidi';
 import {dispatchKeyboardEvent} from '@angular/cdk/testing';
 import {ESCAPE, A} from '@angular/cdk/keycodes';
-import {CdkConnectedOverlay, OverlayModule, CdkOverlayOrigin} from './index';
-import {OverlayContainer} from './overlay-container';
+import {
+  CdkConnectedOverlay,
+  OverlayModule,
+  CdkOverlayOrigin,
+  ScrollDispatcher,
+  Overlay,
+  OverlayContainer,
+  ScrollStrategy,
+} from './index';
 import {
   ConnectedOverlayPositionChange,
   ConnectionPositionPair,
 } from './position/connected-position';
 import {FlexibleConnectedPositionStrategy} from './position/flexible-connected-position-strategy';
+import {Subject} from 'rxjs';
 
 
 describe('Overlay directives', () => {
@@ -18,12 +26,17 @@ describe('Overlay directives', () => {
   let overlayContainerElement: HTMLElement;
   let fixture: ComponentFixture<ConnectedOverlayDirectiveTest>;
   let dir: {value: string};
+  let scrolledSubject = new Subject();
 
   beforeEach(() => {
     TestBed.configureTestingModule({
       imports: [OverlayModule],
       declarations: [ConnectedOverlayDirectiveTest, ConnectedOverlayPropertyInitOrder],
-      providers: [{provide: Directionality, useFactory: () => dir = {value: 'ltr'}}],
+      providers: [{provide: Directionality, useFactory: () => dir = {value: 'ltr'}},
+        {provide: ScrollDispatcher, useFactory: () => ({
+          scrolled: () => scrolledSubject.asObservable()
+        })}
+      ],
     });
   });
 
@@ -411,7 +424,7 @@ describe('Overlay directives', () => {
   });
 
   describe('outputs', () => {
-    it('should emit backdropClick appropriately', () => {
+    it('should emit when the backdrop was clicked', () => {
       fixture.componentInstance.hasBackdrop = true;
       fixture.componentInstance.isOpen = true;
       fixture.detectChanges();
@@ -425,7 +438,7 @@ describe('Overlay directives', () => {
           .toHaveBeenCalledWith(jasmine.any(MouseEvent));
     });
 
-    it('should emit positionChange appropriately', () => {
+    it('should emit when the position has changed', () => {
       expect(fixture.componentInstance.positionChangeHandler).not.toHaveBeenCalled();
       fixture.componentInstance.isOpen = true;
       fixture.detectChanges();
@@ -438,15 +451,24 @@ describe('Overlay directives', () => {
           .toBe(true, `Expected directive to emit an instance of ConnectedOverlayPositionChange.`);
     });
 
-    it('should emit attach and detach appropriately', () => {
+    it('should emit when attached', () => {
       expect(fixture.componentInstance.attachHandler).not.toHaveBeenCalled();
-      expect(fixture.componentInstance.detachHandler).not.toHaveBeenCalled();
       fixture.componentInstance.isOpen = true;
       fixture.detectChanges();
 
       expect(fixture.componentInstance.attachHandler).toHaveBeenCalled();
       expect(fixture.componentInstance.attachResult instanceof HTMLElement)
           .toBe(true, `Expected pane to be populated with HTML elements when attach was called.`);
+
+      fixture.componentInstance.isOpen = false;
+      fixture.detectChanges();
+    });
+
+    it('should emit when detached', () => {
+      expect(fixture.componentInstance.detachHandler).not.toHaveBeenCalled();
+      fixture.componentInstance.isOpen = true;
+      fixture.detectChanges();
+
       expect(fixture.componentInstance.detachHandler).not.toHaveBeenCalled();
 
       fixture.componentInstance.isOpen = false;
@@ -466,10 +488,23 @@ describe('Overlay directives', () => {
       expect(fixture.componentInstance.keydownHandler).toHaveBeenCalledWith(event);
     });
 
+    it('should emit when detached externally', inject([Overlay], (overlay: Overlay) => {
+      expect(fixture.componentInstance.detachHandler).not.toHaveBeenCalled();
+      fixture.componentInstance.scrollStrategy = overlay.scrollStrategies.close();
+      fixture.componentInstance.isOpen = true;
+      fixture.detectChanges();
+
+      expect(fixture.componentInstance.detachHandler).not.toHaveBeenCalled();
+
+      scrolledSubject.next();
+      fixture.detectChanges();
+
+      expect(fixture.componentInstance.detachHandler).toHaveBeenCalled();
+    }));
+
   });
 
 });
-
 
 @Component({
   template: `
@@ -486,6 +521,7 @@ describe('Overlay directives', () => {
             [cdkConnectedOverlayFlexibleDimensions]="flexibleDimensions"
             [cdkConnectedOverlayGrowAfterOpen]="growAfterOpen"
             [cdkConnectedOverlayPush]="push"
+            [cdkConnectedOverlayScrollStrategy]="scrollStrategy"
             cdkConnectedOverlayBackdropClass="mat-test-class"
             cdkConnectedOverlayPanelClass="cdk-test-panel-class"
             (backdropClick)="backdropClickHandler($event)"
@@ -519,13 +555,14 @@ class ConnectedOverlayDirectiveTest {
   flexibleDimensions: boolean;
   growAfterOpen: boolean;
   push: boolean;
+  scrollStrategy: ScrollStrategy;
   backdropClickHandler = jasmine.createSpy('backdropClick handler');
   positionChangeHandler = jasmine.createSpy('positionChange handler');
   keydownHandler = jasmine.createSpy('keydown handler');
   positionOverrides: ConnectionPositionPair[];
   attachHandler = jasmine.createSpy('attachHandler').and.callFake(() => {
-    this.attachResult =
-        this.connectedOverlayDirective.overlayRef.overlayElement.querySelector('p') as HTMLElement;
+    const overlayElement = this.connectedOverlayDirective.overlayRef.overlayElement;
+    this.attachResult = overlayElement.querySelector('p') as HTMLElement;
   });
   detachHandler = jasmine.createSpy('detachHandler');
   attachResult: HTMLElement;
