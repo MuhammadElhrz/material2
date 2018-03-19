@@ -106,7 +106,7 @@ export class MatIcon extends _MatIconMixinBase implements OnChanges, OnInit, Can
   }
   private _fontIcon: string;
 
-  private _previousFontSetClass: string;
+  private _previousFontSetClass: string[] = [];
   private _previousFontIconClass: string;
 
   constructor(
@@ -217,19 +217,13 @@ export class MatIcon extends _MatIconMixinBase implements OnChanges, OnInit, Can
     }
 
     const elem: HTMLElement = this._elementRef.nativeElement;
-    const fontSetClass = this.fontSet ?
-        this._iconRegistry.classNameForFontAlias(this.fontSet) :
+    const fontSetClasses = this.fontSet ?
+        [this._iconRegistry.classNameForFontAlias(this.fontSet)] :
         this._iconRegistry.getDefaultFontSetClass();
 
-    if (fontSetClass != this._previousFontSetClass) {
-      if (this._previousFontSetClass) {
-        elem.classList.remove(this._previousFontSetClass);
-      }
-      if (fontSetClass) {
-        elem.classList.add(fontSetClass);
-      }
-      this._previousFontSetClass = fontSetClass;
-    }
+    this._previousFontSetClass.forEach(className => elem.classList.remove(className));
+    fontSetClasses.forEach(className => elem.classList.add(className));
+    this._previousFontSetClass = fontSetClasses;
 
     if (this.fontIcon != this._previousFontIconClass) {
       if (this._previousFontIconClass) {
