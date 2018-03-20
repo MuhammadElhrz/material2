@@ -30,7 +30,7 @@
   }
 
   .mat-expansion-panel-header-description,
-  .mat-expansion-indicator::after {
+  .mat-expansion-indicator {
     color: mat-color($foreground, secondary-text);
   }
 
@@ -55,5 +55,9 @@
 
   .mat-expansion-panel-content {
     @include mat-typography-level-to-styles($config, body-1);
+  }
+
+  .mat-expansion-panel-header-title {
+    font-weight: mat-font-weight($config, title);
   }
 }
