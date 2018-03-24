@@ -391,27 +391,40 @@ export class MatMenuTrigger implements AfterContentInit, OnDestroy {
 
     let [originY, originFallbackY] = [overlayY, overlayFallbackY];
     let [overlayX, overlayFallbackX] = [originX, originFallbackX];
-    let offsetY = 0;
+    let offsetY: number;
+    let inverseOffsetY: number;
+    let offsetX = this.menu.xOffset || 0;
 
     if (this.triggersSubmenu()) {
       // When the menu is a sub-menu, it should always align itself
       // to the edges of the trigger, instead of overlapping it.
       overlayFallbackX = originX = this.menu.xPosition === 'before' ? 'start' : 'end';
       originFallbackX = overlayX = originX === 'end' ? 'start' : 'end';
-      offsetY = overlayY === 'bottom' ? MENU_PANEL_TOP_PADDING : -MENU_PANEL_TOP_PADDING;
-    } else if (!this.menu.overlapTrigger) {
+    } if (!this.menu.overlapTrigger) {
       originY = overlayY === 'top' ? 'bottom' : 'top';
       originFallbackY = overlayFallbackY === 'top' ? 'bottom' : 'top';
     }
 
+    if (this.menu.yOffset == null) {
+      if (this.triggersSubmenu()) {
+        offsetY = overlayY === 'bottom' ? MENU_PANEL_TOP_PADDING : -MENU_PANEL_TOP_PADDING;
+        inverseOffsetY = -offsetY;
+      } else {
+        offsetY = inverseOffsetY = 0;
+      }
+    } else {
+      offsetY = inverseOffsetY = this.menu.yOffset;
+    }
+
     positionStrategy.withPositions([
-      {originX, originY, overlayX, overlayY, offsetY},
-      {originX: originFallbackX, originY, overlayX: overlayFallbackX, overlayY, offsetY},
+      {originX, originY, overlayX, overlayY, offsetX, offsetY},
+      {originX: originFallbackX, originY, overlayX: overlayFallbackX, overlayY, offsetX, offsetY},
       {
         originX,
         originY: originFallbackY,
         overlayX,
         overlayY: overlayFallbackY,
+        offsetX,
         offsetY: -offsetY
       },
       {
@@ -419,6 +432,7 @@ export class MatMenuTrigger implements AfterContentInit, OnDestroy {
         originY: originFallbackY,
         overlayX: overlayFallbackX,
         overlayY: overlayFallbackY,
+        offsetX,
         offsetY: -offsetY
       }
     ]);

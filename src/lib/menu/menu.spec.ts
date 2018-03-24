@@ -888,6 +888,47 @@ describe('MatMenu', () => {
     });
   });
 
+  describe('offsets', () => {
+    let fixture: ComponentFixture<SimpleMenu>;
+    let trigger: HTMLElement;
+
+    beforeEach(() => {
+      fixture = createComponent(SimpleMenu, [], [FakeIcon]);
+      fixture.detectChanges();
+      trigger = fixture.componentInstance.triggerEl.nativeElement;
+      trigger.style.position = 'fixed';
+      trigger.style.top = trigger.style.left = '200px';
+    });
+
+    it('should be able to set an offset along the x axis', () => {
+      fixture.componentInstance.xOffset = 50;
+      fixture.detectChanges();
+
+      fixture.componentInstance.trigger.openMenu();
+      fixture.detectChanges();
+
+      const panel = overlayContainerElement.querySelector('.mat-menu-panel') as HTMLElement;
+      const triggerRect = trigger.getBoundingClientRect();
+      const panelRect = panel.getBoundingClientRect();
+
+      expect(Math.floor(panelRect.left)).toBe(Math.floor(triggerRect.left) + 50);
+    });
+
+    it('should be able to set an offset along the y axis', () => {
+      fixture.componentInstance.yOffset = 50;
+      fixture.detectChanges();
+
+      fixture.componentInstance.trigger.openMenu();
+      fixture.detectChanges();
+
+      const panel = overlayContainerElement.querySelector('.mat-menu-panel') as HTMLElement;
+      const triggerRect = trigger.getBoundingClientRect();
+      const panelRect = panel.getBoundingClientRect();
+
+      expect(Math.floor(panelRect.top)).toBe(Math.floor(triggerRect.top) + 50);
+    });
+  });
+
   describe('close event', () => {
     let fixture: ComponentFixture<SimpleMenu>;
 
@@ -1689,7 +1730,9 @@ describe('MatMenu default overrides', () => {
       #menu="matMenu"
       class="custom-one custom-two"
       (closed)="closeCallback($event)"
-      [backdropClass]="backdropClass">
+      [backdropClass]="backdropClass"
+      [xOffset]="xOffset"
+      [yOffset]="yOffset">
 
       <button mat-menu-item> Item </button>
       <button mat-menu-item disabled> Disabled </button>
@@ -1709,6 +1752,8 @@ class SimpleMenu {
   extraItems: string[] = [];
   closeCallback = jasmine.createSpy('menu closed callback');
   backdropClass: string;
+  xOffset: number;
+  yOffset: number;
 }
 
 @Component({

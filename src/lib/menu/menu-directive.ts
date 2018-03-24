@@ -8,7 +8,7 @@
 
 import {FocusKeyManager, FocusOrigin} from '@angular/cdk/a11y';
 import {Direction} from '@angular/cdk/bidi';
-import {coerceBooleanProperty} from '@angular/cdk/coercion';
+import {coerceBooleanProperty, coerceNumberProperty} from '@angular/cdk/coercion';
 import {ESCAPE, LEFT_ARROW, RIGHT_ARROW, DOWN_ARROW, UP_ARROW} from '@angular/cdk/keycodes';
 import {
   AfterContentInit,
@@ -102,6 +102,8 @@ export class MatMenu implements AfterContentInit, MatMenuPanel<MatMenuItem>, OnI
   private _keyManager: FocusKeyManager<MatMenuItem>;
   private _xPosition: MenuPositionX = this._defaultOptions.xPosition;
   private _yPosition: MenuPositionY = this._defaultOptions.yPosition;
+  private _xOffset: number;
+  private _yOffset: number;
   private _previousElevation: string;
 
   /** Menu items inside the current menu. */
@@ -154,6 +156,20 @@ export class MatMenu implements AfterContentInit, MatMenuPanel<MatMenuItem>, OnI
     }
     this._yPosition = value;
     this.setPositionClasses();
+  }
+
+  /** Offset of the menu along the X axis. */
+  @Input()
+  get xOffset(): number { return this._xOffset; }
+  set xOffset(value: number) {
+    this._xOffset = coerceNumberProperty(value);
+  }
+
+  /** Offset of the menu along the Y axis. */
+  @Input()
+  get yOffset(): number { return this._yOffset; }
+  set yOffset(value: number) {
+    this._yOffset = coerceNumberProperty(value);
   }
 
   /** @docs-private */
