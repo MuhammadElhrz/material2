@@ -29,7 +29,7 @@ let dialogElementUid = 0;
   exportAs: 'matDialogClose',
   host: {
     '(click)': 'dialogRef.close(dialogResult)',
-    '[attr.aria-label]': 'ariaLabel',
+    '[attr.aria-label]': '_hasAriaLabel ? ariaLabel : null',
     'type': 'button', // Prevents accidental form submits.
   }
 })
@@ -42,9 +42,15 @@ export class MatDialogClose implements OnInit, OnChanges {
 
   @Input('matDialogClose') _matDialogClose: any;
 
+  /**
+   * Whether the button should have an `aria-label`. Used for clearing the
+   * attribute to prevent it from being read instead of the button's text.
+   */
+  _hasAriaLabel: boolean;
+
   constructor(
     @Optional() public dialogRef: MatDialogRef<any>,
-    private _elementRef: ElementRef,
+    private _elementRef: ElementRef<HTMLElement>,
     private _dialog: MatDialog) {}
 
   ngOnInit() {
@@ -56,6 +62,15 @@ export class MatDialogClose implements OnInit, OnChanges {
       // be resolved at constructor time.
       this.dialogRef = getClosestDialog(this._elementRef, this._dialog.openDialogs)!;
     }
+
+    const element = this._elementRef.nativeElement;
+
+    if (element.hasAttribute('mat-icon-button')) {
+      this._hasAriaLabel = true;
+    } else {
+      const buttonTextContent = element.textContent;
+      this._hasAriaLabel = !buttonTextContent || buttonTextContent.trim().length === 0;
+    }
   }
 
   ngOnChanges(changes: SimpleChanges) {
@@ -63,6 +78,10 @@ export class MatDialogClose implements OnInit, OnChanges {
 
     if (proxiedChange) {
       this.dialogResult = proxiedChange.currentValue;
+    }
+
+    if (changes.ariaLabel) {
+      this._hasAriaLabel = !!changes.ariaLabel.currentValue;
     }
   }
 }
