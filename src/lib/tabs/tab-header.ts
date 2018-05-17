@@ -21,6 +21,7 @@ import {
   EventEmitter,
   Input,
   NgZone,
+  Inject,
   OnDestroy,
   Optional,
   Output,
@@ -34,6 +35,7 @@ import {takeUntil} from 'rxjs/operators';
 import {MatInkBar} from './ink-bar';
 import {MatTabLabelWrapper} from './tab-label-wrapper';
 import {FocusKeyManager} from '@angular/cdk/a11y';
+import {ANIMATION_MODULE_TYPE} from '@angular/platform-browser/animations';
 
 
 /**
@@ -139,8 +141,9 @@ export class MatTabHeader extends _MatTabHeaderMixinBase
               private _changeDetectorRef: ChangeDetectorRef,
               private _viewportRuler: ViewportRuler,
               @Optional() private _dir: Directionality,
-              // @breaking-change 8.0.0 `_ngZone` parameter to be made required.
-              private _ngZone?: NgZone) {
+              // @breaking-change 8.0.0 `_ngZone` and `_animationMode` to be made required.
+              private _ngZone?: NgZone,
+              @Optional() @Inject(ANIMATION_MODULE_TYPE) public _animationMode?: string) {
     super();
   }
 
