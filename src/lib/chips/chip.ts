@@ -41,6 +41,7 @@ import {
 } from '@angular/material/core';
 import {Subject} from 'rxjs';
 import {take} from 'rxjs/operators';
+import {ANIMATION_MODULE_TYPE} from '@angular/platform-browser/animations';
 
 
 /** Represents an event fired on an individual `mat-chip`. */
@@ -108,6 +109,7 @@ export class MatChipTrailingIcon {}
     '[class.mat-chip-with-avatar]': 'avatar',
     '[class.mat-chip-with-trailing-icon]': 'trailingIcon || removeIcon',
     '[class.mat-chip-disabled]': 'disabled',
+    '[class._mat-animation-noopable]': '_animationsDisabled',
     '[attr.disabled]': 'disabled || null',
     '[attr.aria-disabled]': 'disabled.toString()',
     '[attr.aria-selected]': 'ariaSelected',
@@ -142,6 +144,9 @@ export class MatChip extends _MatChipMixinBase implements FocusableOption, OnDes
 
   /** Whether the chip has focus. */
   _hasFocus: boolean = false;
+
+  /** Whether animations for the chip are enabled. */
+  _animationsDisabled: boolean;
 
   /** Whether the chip list is selectable */
   chipListSelectable: boolean = true;
@@ -222,16 +227,19 @@ export class MatChip extends _MatChipMixinBase implements FocusableOption, OnDes
     return this.selectable ? this.selected.toString() : null;
   }
 
-  constructor(public _elementRef: ElementRef,
+  constructor(public _elementRef: ElementRef<HTMLElement>,
               private _ngZone: NgZone,
               platform: Platform,
-              @Optional() @Inject(MAT_RIPPLE_GLOBAL_OPTIONS) globalOptions: RippleGlobalOptions) {
+              @Optional() @Inject(MAT_RIPPLE_GLOBAL_OPTIONS) globalOptions: RippleGlobalOptions,
+              // @breaking-change 7.0.0 `animationMode` parameter to become required.
+              @Optional() @Inject(ANIMATION_MODULE_TYPE) animationMode?: string) {
     super(_elementRef);
 
     this._addHostClassName();
 
     this._chipRipple = new RippleRenderer(this, _ngZone, _elementRef, platform);
     this._chipRipple.setupTriggerEvents(_elementRef.nativeElement);
+    this._animationsDisabled = animationMode === 'NoopAnimations';
 
     if (globalOptions) {
       // TODO(paul): Do not copy each option manually. Allow dynamic global option changes: #9729
@@ -241,18 +249,23 @@ export class MatChip extends _MatChipMixinBase implements FocusableOption, OnDes
         terminateOnPointerUp: globalOptions.terminateOnPointerUp,
       };
     }
+
+    if (this._animationsDisabled) {
+      this.rippleConfig.animation = {enterDuration: 0, exitDuration: 0};
+    }
   }
 
   _addHostClassName() {
+    const element = this._elementRef.nativeElement;
+
     // Add class for the different chips
     for (const attr of CHIP_ATTRIBUTE_NAMES) {
-      if (this._elementRef.nativeElement.hasAttribute(attr) ||
-        this._elementRef.nativeElement.tagName.toLowerCase() === attr) {
-        (this._elementRef.nativeElement as HTMLElement).classList.add(attr);
+      if (element.hasAttribute(attr) || element.tagName.toLowerCase() === attr) {
+        element.classList.add(attr);
         return;
       }
     }
-    (this._elementRef.nativeElement as HTMLElement).classList.add('mat-standard-chip');
+    element.classList.add('mat-standard-chip');
   }
 
   ngOnDestroy() {
