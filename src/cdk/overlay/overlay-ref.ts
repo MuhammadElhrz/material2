@@ -52,6 +52,9 @@ export class OverlayRef implements PortalOutlet, OverlayReference {
     };
   });
 
+  /** Whether animations are disabled for this overlay. */
+  private readonly _animationsDisabled: boolean;
+
   /** Stream of keydown events dispatched to this overlay. */
   _keydownEvents = new Subject<KeyboardEvent>();
 
@@ -67,13 +70,19 @@ export class OverlayRef implements PortalOutlet, OverlayReference {
       private _keyboardDispatcher: OverlayKeyboardDispatcher,
       private _document: Document,
       // @breaking-change 8.0.0 `_location` parameter to be made required.
-      private _location?: Location) {
+      private _location?: Location,
+      /**
+       * @deprecated `animationMode` parameter to be made required.
+       * @breaking-change 8.0.0
+       */
+      animationMode?: string) {
 
     if (_config.scrollStrategy) {
       _config.scrollStrategy.attach(this);
     }
 
     this._positionStrategy = _config.positionStrategy;
+    this._animationsDisabled = animationMode === 'NoopAnimations';
   }
 
   /** The overlay's HTML element */
@@ -354,6 +363,10 @@ export class OverlayRef implements PortalOutlet, OverlayReference {
     this._backdropElement = this._document.createElement('div');
     this._backdropElement.classList.add('cdk-overlay-backdrop');
 
+    if (this._animationsDisabled) {
+      this._backdropElement.classList.add('cdk-overlay-backdrop-transition-disabled');
+    }
+
     if (this._config.backdropClass) {
       this._toggleClasses(this._backdropElement, this._config.backdropClass, true);
     }
@@ -398,24 +411,32 @@ export class OverlayRef implements PortalOutlet, OverlayReference {
   detachBackdrop(): void {
     let backdropToDetach = this._backdropElement;
 
-    if (backdropToDetach) {
-      let timeoutId: number;
-      let finishDetach = () => {
-        // It may not be attached to anything in certain cases (e.g. unit tests).
-        if (backdropToDetach && backdropToDetach.parentNode) {
-          backdropToDetach.parentNode.removeChild(backdropToDetach);
-        }
+    if (!backdropToDetach) {
+      return;
+    }
 
-        // It is possible that a new portal has been attached to this overlay since we started
-        // removing the backdrop. If that is the case, only clear the backdrop reference if it
-        // is still the same instance that we started to remove.
-        if (this._backdropElement == backdropToDetach) {
-          this._backdropElement = null;
-        }
+    let timeoutId: number;
+    const finishDetach = () => {
+      // It may not be attached to anything in certain cases (e.g. unit tests).
+      if (backdropToDetach && backdropToDetach.parentNode) {
+        backdropToDetach.parentNode.removeChild(backdropToDetach);
+      }
 
-        clearTimeout(timeoutId);
-      };
+      // It is possible that a new portal has been attached to this overlay since we started
+      // removing the backdrop. If that is the case, only clear the backdrop reference if it
+      // is still the same instance that we started to remove.
+      if (this._backdropElement == backdropToDetach) {
+        this._backdropElement = null;
+      }
 
+      clearTimeout(timeoutId);
+    };
+
+    if (this._animationsDisabled) {
+      // When the animations are disabled via the `NoopAnimationsModule`, we can be
+      // fairly certain that they won't happen so we can remove the element immediately.
+      finishDetach();
+    } else {
       backdropToDetach.classList.remove('cdk-overlay-backdrop-showing');
 
       if (this._config.backdropClass) {
