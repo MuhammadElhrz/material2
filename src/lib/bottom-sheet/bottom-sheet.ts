@@ -43,8 +43,21 @@ export class MatBottomSheet {
       private _injector: Injector,
       @Optional() @SkipSelf() private _parentBottomSheet: MatBottomSheet) {}
 
+  /**
+   * Opens a bottom sheet containing the given component.
+   * @param component Type of the component to load into the bottom sheet.
+   * @param config Extra configuration options.
+   * @returns Reference to the newly-opened bottom sheet.
+   */
   open<T, D = any, R = any>(component: ComponentType<T>,
                    config?: MatBottomSheetConfig<D>): MatBottomSheetRef<T, R>;
+
+  /**
+   * Opens a bottom sheet containing the given template.
+   * @param template TemplateRef to instantiate as the bottom sheet content.
+   * @param config Extra configuration options.
+   * @returns Reference to the newly-opened bottom sheet.
+   */
   open<T, D = any, R = any>(template: TemplateRef<T>,
                    config?: MatBottomSheetConfig<D>): MatBottomSheetRef<T, R>;
 
