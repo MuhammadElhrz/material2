@@ -353,6 +353,7 @@ export class MatCheckbox extends _MatCheckboxMixinBase implements ControlValueAc
   /** Toggles the `checked` state of the checkbox. */
   toggle(): void {
     this.checked = !this.checked;
+    this._controlValueAccessorChangeFn(this.checked);
   }
 
   /**
