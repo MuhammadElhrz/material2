@@ -86,7 +86,7 @@ export class MatButton extends _MatButtonMixinBase
   /** Reference to the MatRipple instance of the button. */
   @ViewChild(MatRipple) ripple: MatRipple;
 
-  constructor(elementRef: ElementRef,
+  constructor(elementRef: ElementRef<HTMLElement>,
               /**
                * @deprecated Platform checks for SSR are no longer needed
                * @breaking-change 7.0.0
@@ -98,13 +98,18 @@ export class MatButton extends _MatButtonMixinBase
               @Optional() @Inject(ANIMATION_MODULE_TYPE) public _animationMode?: string) {
     super(elementRef);
 
-    // For each of the variant selectors that is prevent in the button's host
+    // For each of the variant selectors that is present in the button's host
     // attributes, add the correct corresponding class.
     for (const attr of BUTTON_HOST_ATTRIBUTES) {
       if (this._hasHostAttributes(attr)) {
-        (elementRef.nativeElement as HTMLElement).classList.add(attr);
+        elementRef.nativeElement.classList.add(attr);
       }
     }
+
+    // Add a class that applies to all buttons. This makes it easier to target if somebody
+    // wants to target all Material buttons. We do it here rather than `host` to ensure that
+    // the class is applied to derived classes.
+    elementRef.nativeElement.classList.add('mat-button-base');
 
     this._focusMonitor.monitor(this._elementRef, true);
 
