@@ -73,7 +73,7 @@ export class MatMenuItem extends _MatMenuItemMixinBase
     private _elementRef: ElementRef,
     @Inject(DOCUMENT) document?: any,
     private _focusMonitor?: FocusMonitor,
-    @Inject(MAT_MENU_PANEL) @Optional() private _parentMenu?: MatMenuPanel<MatMenuItem>) {
+    @Inject(MAT_MENU_PANEL) @Optional() public _parentMenu?: MatMenuPanel<MatMenuItem>) {
 
     // @breaking-change 7.0.0 make `_focusMonitor` and `document` required params.
     super();

@@ -544,6 +544,32 @@ describe('MatMenu', () => {
 
       expect(item.textContent!.trim()).toBe('two');
     }));
+
+    it('should respect the DOM order, rather than insertion order, when moving focus using ' +
+      'the arrow keys', fakeAsync(() => {
+        let fixture = createComponent(SimpleMenuWithRepeater);
+
+        fixture.detectChanges();
+        fixture.componentInstance.trigger.openMenu();
+        fixture.detectChanges();
+        tick(500);
+
+        let menuPanel = document.querySelector('.mat-menu-panel')!;
+        let items = menuPanel.querySelectorAll('.mat-menu-panel [mat-menu-item]');
+
+        expect(document.activeElement).toBe(items[0], 'Expected first item to be focused on open');
+
+        // Add a new item after the first one.
+        fixture.componentInstance.items.splice(1, 0, 'Calzone');
+        fixture.detectChanges();
+
+        items = menuPanel.querySelectorAll('.mat-menu-panel [mat-menu-item]');
+        dispatchKeyboardEvent(menuPanel, 'keydown', DOWN_ARROW);
+        fixture.detectChanges();
+        tick();
+
+        expect(document.activeElement).toBe(items[1], 'Expected second item to be focused');
+      }));
   });
 
   describe('positions', () => {
@@ -1970,5 +1996,19 @@ class SimpleLazyMenu {
 class LazyMenuWithContext {
   @ViewChild('triggerOne') triggerOne: MatMenuTrigger;
   @ViewChild('triggerTwo') triggerTwo: MatMenuTrigger;
+}
+
+@Component({
+  template: `
+    <button [matMenuTriggerFor]="menu">Toggle menu</button>
+    <mat-menu #menu="matMenu">
+      <button *ngFor="let item of items" mat-menu-item>{{item}}</button>
+    </mat-menu>
+  `
+})
+class SimpleMenuWithRepeater {
+  @ViewChild(MatMenuTrigger) trigger: MatMenuTrigger;
+  @ViewChild(MatMenu) menu: MatMenu;
+  items = ['Pizza', 'Pasta'];
 }
 
