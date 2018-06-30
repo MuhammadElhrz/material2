@@ -19,6 +19,6 @@ export class LiveAnnouncerDemo {
   constructor(private live: LiveAnnouncer) {}
 
   announceText(message: string) {
-    this.live.announce(message);
+    this.live.announce(message, 1500);
   }
 }
