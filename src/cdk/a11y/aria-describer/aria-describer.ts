@@ -15,6 +15,7 @@ import {
   Optional,
   SkipSelf,
 } from '@angular/core';
+import {Platform} from '@angular/cdk/platform';
 import {addAriaReferencedId, getAriaReferenceIds, removeAriaReferencedId} from './aria-reference';
 
 
@@ -58,7 +59,12 @@ let messagesContainer: HTMLElement | null = null;
 export class AriaDescriber implements OnDestroy {
   private _document: Document;
 
-  constructor(@Inject(DOCUMENT) _document: any) {
+  constructor(
+    @Inject(DOCUMENT) _document: any,
+    /**
+     * @deletion-target 8.0.0 `_platform` parameter to be made required.
+     */
+    private _platform?: Platform) {
     this._document = _document;
   }
 
@@ -146,6 +152,8 @@ export class AriaDescriber implements OnDestroy {
   /** Creates the global container for all aria-describedby messages. */
   private _createMessagesContainer() {
     if (!messagesContainer) {
+      // @deletion-target 8.0.0 `_platform` null check can be removed once the parameter is required
+      const canBeAriaHidden = !this._platform || (!this._platform.EDGE && !this._platform.TRIDENT);
       const preExistingContainer = this._document.getElementById(MESSAGES_CONTAINER_ID);
 
       // When going from the server to the client, we may end up in a situation where there's
@@ -158,8 +166,13 @@ export class AriaDescriber implements OnDestroy {
 
       messagesContainer = this._document.createElement('div');
       messagesContainer.id = MESSAGES_CONTAINER_ID;
-      messagesContainer.setAttribute('aria-hidden', 'true');
-      messagesContainer.style.display = 'none';
+      messagesContainer.classList.add('cdk-visually-hidden');
+
+      // IE and Edge won't read out the messages if they're in an `aria-hidden` container.
+      // We only disable `aria-hidden` for these platforms, because it comes with the
+      // disadvantage that people might hit the messages when they've navigated past
+      // the end of the document using the arrow keys.
+      messagesContainer.setAttribute('aria-hidden', canBeAriaHidden + '');
       this._document.body.appendChild(messagesContainer);
     }
   }
