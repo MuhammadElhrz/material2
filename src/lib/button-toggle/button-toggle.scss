@@ -20,6 +20,9 @@ $mat-button-toggle-legacy-border-radius: 2px !default;
   overflow: hidden;
   border-radius: $mat-button-toggle-legacy-border-radius;
 
+  // Fixes the ripples not being clipped to the border radius on Safari.
+  transform: translateZ(0);
+
   @include cdk-high-contrast {
     outline: solid 1px;
   }

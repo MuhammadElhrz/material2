@@ -89,6 +89,11 @@
   border-radius: inherit;
 }
 
+.mat-button-ripple {
+  // Fixes the ripples not being clipped to the border radius on Safari.
+  transform: translateZ(0);
+}
+
 // Element that overlays the button to show focus and hover effects.
 .mat-button-focus-overlay {
   border-radius: inherit;
