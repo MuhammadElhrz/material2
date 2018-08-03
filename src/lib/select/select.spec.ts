@@ -2497,8 +2497,9 @@ describe('MatSelect', () => {
 
     it('should be able to programmatically select a falsy option', fakeAsync(() => {
       const fixture = TestBed.createComponent(FalsyValueSelect);
-
       fixture.detectChanges();
+      flush();
+
       fixture.debugElement.query(By.css('.mat-select-trigger')).nativeElement.click();
       fixture.componentInstance.control.setValue(0);
       fixture.detectChanges();
@@ -3049,6 +3050,8 @@ describe('MatSelect', () => {
 
         let groupFixture = TestBed.createComponent(SelectWithGroups);
         groupFixture.detectChanges();
+        flush();
+
         trigger = groupFixture.debugElement.query(By.css('.mat-select-trigger')).nativeElement;
         formField = groupFixture.debugElement.query(By.css('mat-form-field')).nativeElement;
 
@@ -3715,7 +3718,10 @@ describe('MatSelect', () => {
   });
 
   describe('with multiple selection', () => {
-    beforeEach(async(() => configureMatSelectTestingModule([MultiSelect])));
+    beforeEach(async(() => configureMatSelectTestingModule([
+      MultiSelect,
+      MultiSelectWithLotsOfPreselectedOptions
+    ])));
 
     let fixture: ComponentFixture<MultiSelect>;
     let testInstance: MultiSelect;
@@ -4095,6 +4101,17 @@ describe('MatSelect', () => {
       expect(options.some(option => option.selected)).toBe(false);
       expect(testInstance.control.value).toEqual([]);
     });
+
+    it('should not throw with a large amount of preselected options', fakeAsync(() => {
+      fixture.destroy();
+
+      const lotsOfOptionsFixture = TestBed.createComponent(MultiSelectWithLotsOfPreselectedOptions);
+
+      expect(() => {
+        lotsOfOptionsFixture.detectChanges();
+        flush();
+      }).not.toThrow();
+    }));
 
   });
 });
@@ -4850,4 +4867,19 @@ class SelectWithoutOptionCentering {
 })
 class SelectWithFormFieldLabel {
   placeholder: string;
+}
+
+
+@Component({
+  template: `
+    <mat-form-field>
+      <mat-select multiple [ngModel]="value">
+        <mat-option *ngFor="let item of items" [value]="item">{{item}}</mat-option>
+      </mat-select>
+    </mat-form-field>
+  `
+})
+class MultiSelectWithLotsOfPreselectedOptions {
+  items = new Array(1000).fill(0).map((_, i) => i);
+  value = [...this.items];
 }
