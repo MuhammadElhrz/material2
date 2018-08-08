@@ -361,6 +361,31 @@ describe('MatPaginator', () => {
         .toBeNull('Expected select to be removed.');
   });
 
+  it('should emit the `page` event when the pageIndex is changed', () => {
+    paginator.pageIndex = 2;
+
+    expect(component.pageEvent).toHaveBeenCalledWith(jasmine.objectContaining({
+      previousPageIndex: 0,
+      pageIndex: 2
+    }));
+  });
+
+  it('should emit the `page` event when the length is changed', () => {
+    paginator.length = 1337;
+
+    expect(component.pageEvent).toHaveBeenCalledWith(jasmine.objectContaining({
+      length: 1337
+    }));
+  });
+
+  it('should emit the `page` event when the pageSize is changed', () => {
+    paginator.pageSize = 27;
+
+    expect(component.pageEvent).toHaveBeenCalledWith(jasmine.objectContaining({
+      pageSize: 27
+    }));
+  });
+
 });
 
 function getPreviousButton(fixture: ComponentFixture<any>) {
