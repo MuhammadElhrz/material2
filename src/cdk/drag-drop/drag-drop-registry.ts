@@ -39,10 +39,11 @@ export class DragDropRegistry<I, C extends {id: string}> implements OnDestroy {
   private _activeDragInstances = new Set<I>();
 
   /** Keeps track of the event listeners that we've bound to the `document`. */
-  private _globalListeners = new Map<'touchmove' | 'mousemove' | 'touchend' | 'mouseup', {
-    handler: PointerEventHandler,
-    options?: any
-  }>();
+  private _globalListeners =
+      new Map<'touchmove' | 'mousemove' | 'touchend' | 'touchcancel' | 'mouseup', {
+        handler: PointerEventHandler,
+        options?: any
+      }>();
 
   /**
    * Emits the `touchmove` or `mousemove` events that are dispatched
@@ -115,18 +116,27 @@ export class DragDropRegistry<I, C extends {id: string}> implements OnDestroy {
       const isTouchEvent = event.type.startsWith('touch');
       const moveEvent = isTouchEvent ? 'touchmove' : 'mousemove';
       const upEvent = isTouchEvent ? 'touchend' : 'mouseup';
+      const upConfig = {handler: e => this.pointerUp.next(e)};
 
       // We explicitly bind __active__ listeners here, because newer browsers will default to
       // passive ones for `mousemove` and `touchmove`. The events need to be active, because we
       // use `preventDefault` to prevent the page from scrolling while the user is dragging.
       this._globalListeners
         .set(moveEvent, {handler: e => this.pointerMove.next(e), options: activeEventOptions})
-        .set(upEvent, {handler: e => this.pointerUp.next(e)})
-        .forEach((config, name) => {
-          this._ngZone.runOutsideAngular(() => {
-            this._document.addEventListener(name, config.handler, config.options);
-          });
+        .set(upEvent, upConfig);
+
+      if (isTouchEvent) {
+        // Treat `touchcancel` events the same as `touchend`. `touchcancel` will fire for cases
+        // like an OS-level event interrupting the touch sequence or the user putting too many
+        // finger on the screen at the same time.
+        this._globalListeners.set('touchcancel', upConfig);
+      }
+
+      this._ngZone.runOutsideAngular(() => {
+        this._globalListeners.forEach((config, name) => {
+          this._document.addEventListener(name, config.handler, config.options);
         });
+      });
     }
   }
 
