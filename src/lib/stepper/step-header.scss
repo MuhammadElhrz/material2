@@ -38,10 +38,13 @@ $mat-step-header-icon-size: 16px !default;
   transform: translate(-50%, -50%);
 }
 
-.mat-step-icon .mat-icon {
-  font-size: $mat-step-header-icon-size;
-  height: $mat-step-header-icon-size;
-  width: $mat-step-header-icon-size;
+.mat-step-icon,
+.mat-step-icon-not-touched {
+  .mat-icon {
+    font-size: $mat-step-header-icon-size;
+    height: $mat-step-header-icon-size;
+    width: $mat-step-header-icon-size;
+  }
 }
 
 .mat-step-label {
