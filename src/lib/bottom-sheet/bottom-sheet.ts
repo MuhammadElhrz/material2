@@ -45,18 +45,18 @@ export class MatBottomSheet {
       @Optional() @SkipSelf() private _parentBottomSheet: MatBottomSheet,
       @Optional() private _location?: Location) {}
 
-  open<T, D = any, R = any>(component: ComponentType<T>,
-                   config?: MatBottomSheetConfig<D>): MatBottomSheetRef<T, R>;
-  open<T, D = any, R = any>(template: TemplateRef<T>,
-                   config?: MatBottomSheetConfig<D>): MatBottomSheetRef<T, R>;
+  open<T, D = any>(component: ComponentType<T>,
+                   config?: MatBottomSheetConfig<D>): MatBottomSheetRef<T, {}>;
+  open<T, D = any>(template: TemplateRef<T>,
+                   config?: MatBottomSheetConfig<D>): MatBottomSheetRef<T, {}>;
 
-  open<T, D = any, R = any>(componentOrTemplateRef: ComponentType<T> | TemplateRef<T>,
-                   config?: MatBottomSheetConfig<D>): MatBottomSheetRef<T, R> {
+  open<T, D = any>(componentOrTemplateRef: ComponentType<T> | TemplateRef<T>,
+                   config?: MatBottomSheetConfig<D>): MatBottomSheetRef<T, {}> {
 
     const _config = _applyConfigDefaults(config);
     const overlayRef = this._createOverlay(_config);
     const container = this._attachContainer(overlayRef, _config);
-    const ref = new MatBottomSheetRef<T, R>(container, overlayRef, this._location);
+    const ref = new MatBottomSheetRef<T>(container, overlayRef, this._location);
 
     if (componentOrTemplateRef instanceof TemplateRef) {
       container.attachTemplatePortal(new TemplatePortal<T>(componentOrTemplateRef, null!, {
