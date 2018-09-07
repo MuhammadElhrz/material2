@@ -16,7 +16,6 @@ ng_module(
   deps = [
     "//src/lib/core",
     "//src/lib/button",
-    "//src/lib/dialog",
     "//src/lib/input",
     "//src/cdk/a11y",
     "//src/cdk/bidi",
