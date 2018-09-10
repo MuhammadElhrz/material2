@@ -187,7 +187,7 @@ export class MatDialog {
    * @returns The overlay configuration.
    */
   private _getOverlayConfig(dialogConfig: MatDialogConfig): OverlayConfig {
-    const state = new OverlayConfig({
+    const overlayConfig = new OverlayConfig({
       positionStrategy: this._overlay.position().global(),
       scrollStrategy: dialogConfig.scrollStrategy || this._scrollStrategy(),
       panelClass: dialogConfig.panelClass,
@@ -200,10 +200,10 @@ export class MatDialog {
     });
 
     if (dialogConfig.backdropClass) {
-      state.backdropClass = dialogConfig.backdropClass;
+      overlayConfig.backdropClass = dialogConfig.backdropClass;
     }
 
-    return state;
+    return overlayConfig;
   }
 
   /**
