@@ -76,6 +76,14 @@ export function CDK_DRAG_CONFIG_FACTORY(): CdkDragConfig {
   return {dragStartThreshold: 5, pointerDirectionChangeThreshold: 5};
 }
 
+/**
+ * Time in milliseconds for which to ignore mouse events, after
+ * receiving a touch event. Used to avoid doing double work for
+ * touch devices where the browser fires fake mouse events, in
+ * addition to touch events.
+ */
+const MOUSE_EVENT_IGNORE_TIME = 800;
+
 /** Element that can be moved inside a CdkDrop container. */
 @Directive({
   selector: '[cdkDrag]',
@@ -161,6 +169,12 @@ export class CdkDrag<T = any> implements AfterViewInit, OnDestroy {
 
   /** Subscription to the event that is dispatched when the user lifts their pointer. */
   private _pointerUpSubscription = Subscription.EMPTY;
+  /**
+   * Time at which the last touch event occurred. Used to avoid firing the same
+   * events multiple times on touch devices where the browser will fire a fake
+   * mouse event for each touch event, after a certain time.
+   */
+  private _lastTouchEventTime: number;
 
   /** Elements that can be used to drag the draggable item. */
   @ContentChildren(CdkDragHandle) _handles: QueryList<CdkDragHandle>;
@@ -308,9 +322,13 @@ export class CdkDrag<T = any> implements AfterViewInit, OnDestroy {
    */
   private _initializeDragSequence(referenceElement: HTMLElement, event: MouseEvent | TouchEvent) {
     const isDragging = this._isDragging();
+    const isTouchEvent = this._isTouchEvent(event);
+    const isAuxiliaryMouseButton = !isTouchEvent && (event as MouseEvent).button !== 0;
+    const isSyntheticEvent = !isTouchEvent && this._lastTouchEventTime &&
+        this._lastTouchEventTime + MOUSE_EVENT_IGNORE_TIME > Date.now();
 
     // Abort if the user is already dragging or is using a mouse button other than the primary one.
-    if (isDragging || (!this._isTouchEvent(event) && event.button !== 0)) {
+    if (isDragging || isAuxiliaryMouseButton || isSyntheticEvent) {
       return;
     }
 
@@ -331,9 +349,13 @@ export class CdkDrag<T = any> implements AfterViewInit, OnDestroy {
   }
 
   /** Starts the dragging sequence. */
-  private _startDragSequence() {
+  private _startDragSequence(event: MouseEvent | TouchEvent) {
     // Emit the event on the item before the one on the container.
     this.started.emit({source: this});
+
+    if (this._isTouchEvent(event)) {
+      this._lastTouchEventTime = Date.now();
+    }
 
     if (this.dropContainer) {
       const element = this._rootElement;
@@ -370,7 +392,7 @@ export class CdkDrag<T = any> implements AfterViewInit, OnDestroy {
       // per pixel of movement (e.g. if the user moves their pointer quickly).
       if (distanceX + distanceY >= minimumDistance) {
         this._hasStartedDragging = true;
-        this._ngZone.run(() => this._startDragSequence());
+        this._ngZone.run(() => this._startDragSequence(event));
       }
 
       return;
@@ -426,10 +448,14 @@ export class CdkDrag<T = any> implements AfterViewInit, OnDestroy {
       this._passiveTransform.x = this._activeTransform.x;
       this._passiveTransform.y = this._activeTransform.y;
       this._ngZone.run(() => this.ended.emit({source: this}));
+      this._dragDropRegistry.stopDragging(this);
       return;
     }
 
-    this._animatePreviewToPlaceholder().then(() => this._cleanupDragArtifacts());
+    this._animatePreviewToPlaceholder().then(() => {
+      this._cleanupDragArtifacts();
+      this._dragDropRegistry.stopDragging(this);
+    });
   }
 
   /** Cleans up the DOM artifacts that were added to facilitate the element being dragged. */
