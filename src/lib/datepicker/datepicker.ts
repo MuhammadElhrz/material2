@@ -21,6 +21,7 @@ import {DOCUMENT} from '@angular/common';
 import {
   AfterViewInit,
   ChangeDetectionStrategy,
+  ChangeDetectorRef,
   Component,
   ComponentRef,
   ElementRef,
@@ -44,6 +45,7 @@ import {
   ThemePalette,
 } from '@angular/material/core';
 import {MatDialog, MatDialogRef} from '@angular/material/dialog';
+import {AnimationEvent} from '@angular/animations';
 import {merge, Subject, Subscription} from 'rxjs';
 import {filter, take} from 'rxjs/operators';
 import {MatCalendar} from './calendar';
@@ -92,7 +94,8 @@ export const _MatDatepickerContentMixinBase: CanColorCtor & typeof MatDatepicker
   styleUrls: ['datepicker-content.css'],
   host: {
     'class': 'mat-datepicker-content',
-    '[@transformPanel]': '"enter"',
+    '[@transformPanel]': '_animationState',
+    '(@transformPanel.done)': '_animationDone.next($event)',
     '[class.mat-datepicker-content-touch]': 'datepicker.touchUi',
   },
   animations: [
@@ -105,7 +108,7 @@ export const _MatDatepickerContentMixinBase: CanColorCtor & typeof MatDatepicker
   inputs: ['color'],
 })
 export class MatDatepickerContent<D> extends _MatDatepickerContentMixinBase
-  implements AfterViewInit, CanColor {
+  implements AfterViewInit, OnDestroy, CanColor {
 
   /** Reference to the internal calendar component. */
   @ViewChild(MatCalendar) _calendar: MatCalendar<D>;
@@ -116,12 +119,29 @@ export class MatDatepickerContent<D> extends _MatDatepickerContentMixinBase
   /** Whether the datepicker is above or below the input. */
   _isAbove: boolean;
 
-  constructor(elementRef: ElementRef) {
+  /** State of the datepicker's animation. */
+  _animationState: 'enter' | 'void' = 'enter';
+
+  /** Emits whenever an animation on the datepicker completes. */
+  _animationDone = new Subject<AnimationEvent>();
+
+  constructor(elementRef: ElementRef, private _changeDetectorRef: ChangeDetectorRef) {
     super(elementRef);
+  }
+
+  /** Starts the datepicker's exiting animation. */
+  _startExitAnimation() {
+    this._animationState = 'void';
+    this._changeDetectorRef.markForCheck();
+    return this._animationDone;
   }
 
   ngAfterViewInit() {
     this._calendar.focusActiveCell();
+  }
+
+  ngOnDestroy() {
+    this._animationDone.complete();
   }
 }
 
@@ -351,7 +371,13 @@ export class MatDatepicker<D> implements OnDestroy, CanColor {
       return;
     }
     if (this._popupRef && this._popupRef.hasAttached()) {
-      this._popupRef.detach();
+      const popupInstance = this._popupComponentRef!.instance;
+
+      // We have to wait for the exit animation to finish before detaching the content, because
+      // we're using a portal outlet to render out the calendar header, which will detach
+      // immediately in `ngOnDestroy` without waiting for the animation, because the animation
+      // is on a parent component, which will cause the calendar to jump up.
+      popupInstance._startExitAnimation().pipe(take(1)).subscribe(() => this._popupRef.detach());
     }
     if (this._dialogRef) {
       this._dialogRef.close();
