@@ -6,6 +6,7 @@
 $mat-card-padding: 16px !default;
 $mat-card-border-radius: 4px !default;
 $mat-card-header-size: 40px !default;
+$mat-card-button-margin: 8px !default;
 
 .mat-card {
   @include mat-elevation-transition;
@@ -83,7 +84,7 @@ $mat-card-header-size: 40px !default;
 
 .mat-card-actions {
   .mat-button, .mat-raised-button {
-    margin: 0 8px;
+    margin: 0 $mat-card-button-margin;
   }
 }
 
@@ -201,7 +202,21 @@ $mat-card-header-size: 40px !default;
 .mat-card-actions .mat-button:first-child,
 .mat-card-actions .mat-raised-button:first-child {
   margin-left: 0;
+
+  [dir='rtl'] & {
+    margin-left: $mat-card-button-margin;
+    margin-right: 0;
+  }
+}
+
+.mat-card-actions .mat-button:last-child,
+.mat-card-actions .mat-raised-button:last-child {
   margin-right: 0;
+
+  [dir='rtl'] & {
+    margin-right: $mat-card-button-margin;
+    margin-left: 0;
+  }
 }
 
 .mat-card-title {
