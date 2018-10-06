@@ -17,6 +17,7 @@ import {
   Optional,
   QueryList,
   ViewEncapsulation,
+  Input,
 } from '@angular/core';
 import {
   CanDisableRipple,
@@ -37,6 +38,8 @@ export const _MatListMixinBase: CanDisableRippleCtor & typeof MatListBase =
 export class MatListItemBase {}
 export const _MatListItemMixinBase: CanDisableRippleCtor & typeof MatListItemBase =
     mixinDisableRipple(MatListItemBase);
+
+let nextUniqueId = 0;
 
 @Component({
   moduleId: module.id,
@@ -93,9 +96,15 @@ export class MatListIconCssMatStyler {}
  */
 @Directive({
   selector: '[mat-subheader], [matSubheader]',
-  host: {'class': 'mat-subheader'}
+  host: {
+    'class': 'mat-subheader',
+    '[id]': 'id'
+  }
 })
-export class MatListSubheaderCssMatStyler {}
+export class MatListSubheaderCssMatStyler {
+  /** Unique ID for the header. */
+  @Input() id = `mat-subheader-${nextUniqueId++}`;
+}
 
 /** An item within a Material Design list. */
 @Component({
