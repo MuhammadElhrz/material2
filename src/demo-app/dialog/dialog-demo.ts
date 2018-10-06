@@ -33,6 +33,8 @@ export class DialogDemo {
     height: '',
     minWidth: '',
     minHeight: '',
+    enterAnimationDuration: defaultDialogConfig.enterAnimationDuration,
+    exitAnimationDuration: defaultDialogConfig.exitAnimationDuration,
     maxWidth: defaultDialogConfig.maxWidth,
     maxHeight: '',
     position: {

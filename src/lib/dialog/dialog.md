@@ -80,8 +80,8 @@ export class YourDialog {
 ### Dialog content
 Several directives are available to make it easier to structure your dialog content:
 
-| Name                  | Description                                                                                                   |
-|-----------------------|---------------------------------------------------------------------------------------------------------------|
+| Name                   | Description                                                                                                   |
+|------------------------|---------------------------------------------------------------------------------------------------------------|
 | `mat-dialog-title`     | \[Attr] Dialog title, applied to a heading element (e.g., `<h1>`, `<h2>`)                                     |
 | `<mat-dialog-content>` | Primary scrollable content of the dialog                                                                      |
 | `<mat-dialog-actions>` | Container for action buttons at the bottom of the dialog                                                      |
@@ -138,6 +138,13 @@ the `ComponentFactory` for it.
 })
 export class AppModule {}
 ```
+
+### Controlling the dialog animation
+You can control the duration of the dialog's enter and exit animations using the
+`enterAnimationDuration` and `exitAnimationDuration` options. If you want to disable the dialog's
+animation completely, you can do so by setting the properties to `0ms`.
+
+<!-- example(dialog-animations) -->
 
 ### Accessibility
 By default, each dialog has `role="dialog"` on the root element. The role can be changed to
