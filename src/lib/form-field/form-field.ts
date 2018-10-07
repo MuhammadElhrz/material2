@@ -26,6 +26,7 @@ import {
   QueryList,
   ViewChild,
   ViewEncapsulation,
+  OnDestroy,
 } from '@angular/core';
 import {
   CanColor, CanColorCtor,
@@ -34,8 +35,8 @@ import {
   MAT_LABEL_GLOBAL_OPTIONS,
   mixinColor,
 } from '@angular/material/core';
-import {fromEvent, merge} from 'rxjs';
-import {startWith, take} from 'rxjs/operators';
+import {fromEvent, merge, Subject} from 'rxjs';
+import {startWith, take, takeUntil} from 'rxjs/operators';
 import {MatError} from './error';
 import {matFormFieldAnimations} from './form-field-animations';
 import {MatFormFieldControl} from './form-field-control';
@@ -141,9 +142,10 @@ export const MAT_FORM_FIELD_DEFAULT_OPTIONS =
 })
 
 export class MatFormField extends _MatFormFieldMixinBase
-    implements AfterContentInit, AfterContentChecked, AfterViewInit, CanColor {
+    implements AfterContentInit, AfterContentChecked, AfterViewInit, OnDestroy, CanColor {
   private _labelOptions: LabelOptions;
   private _outlineGapCalculationNeeded = false;
+  private _destroyed = new Subject<void>();
 
   /** The form-field appearance style. */
   @Input()
@@ -303,6 +305,10 @@ export class MatFormField extends _MatFormFieldMixinBase
       this._syncDescribedByIds();
       this._changeDetectorRef.markForCheck();
     });
+
+    if (this._dir) {
+      this._dir.change.pipe(takeUntil(this._destroyed)).subscribe(() => this.updateOutlineGap());
+    }
   }
 
   ngAfterContentChecked() {
@@ -316,6 +322,11 @@ export class MatFormField extends _MatFormFieldMixinBase
     // Avoid animations on load.
     this._subscriptAnimationState = 'enter';
     this._changeDetectorRef.detectChanges();
+  }
+
+  ngOnDestroy() {
+    this._destroyed.next();
+    this._destroyed.complete();
   }
 
   /** Determines whether a class from the NgControl should be forwarded to the host element. */
