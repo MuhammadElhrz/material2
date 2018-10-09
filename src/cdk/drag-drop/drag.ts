@@ -520,7 +520,7 @@ export class CdkDrag<T = any> implements AfterViewInit, OnDestroy {
       const element = this._rootElement;
       const elementRect = element.getBoundingClientRect();
 
-      preview = element.cloneNode(true) as HTMLElement;
+      preview = deepCloneNode(element);
       preview.style.width = `${elementRect.width}px`;
       preview.style.height = `${elementRect.height}px`;
       this._setTransform(preview, elementRect.left, elementRect.top);
@@ -543,7 +543,7 @@ export class CdkDrag<T = any> implements AfterViewInit, OnDestroy {
       );
       placeholder = this._placeholderRef.rootNodes[0];
     } else {
-      placeholder = this._rootElement.cloneNode(true) as HTMLElement;
+      placeholder = deepCloneNode(this._rootElement);
     }
 
     placeholder.classList.add('cdk-drag-placeholder');
@@ -750,4 +750,12 @@ export class CdkDrag<T = any> implements AfterViewInit, OnDestroy {
 interface Point {
   x: number;
   y: number;
+}
+
+/** Creates a deep clone of an element. */
+function deepCloneNode(node: HTMLElement): HTMLElement {
+  const clone = node.cloneNode(true) as HTMLElement;
+  // Remove the `id` to avoid having multiple elements with the same id on the page.
+  clone.removeAttribute('id');
+  return clone;
 }
