@@ -5,6 +5,7 @@ import {
   dispatchMouseEvent,
   createTouchEvent,
   dispatchTouchEvent,
+  dispatchFakeEvent,
 } from '@angular/cdk/testing';
 import {DragDropRegistry} from './drag-drop-registry';
 import {DragDropModule} from './drag-drop-module';
@@ -153,6 +154,15 @@ describe('DragDropRegistry', () => {
     registry.startDragging(testComponent.dragItems.first,
       createTouchEvent('touchstart') as TouchEvent);
     expect(dispatchTouchEvent(document, 'touchmove').defaultPrevented).toBe(true);
+  });
+
+  it('should not prevent the default `wheel` actions when nothing is being dragged', () => {
+    expect(dispatchFakeEvent(document, 'wheel').defaultPrevented).toBe(false);
+  });
+
+  it('should prevent the default `wheel` action when an item is being dragged', () => {
+    registry.startDragging(testComponent.dragItems.first, createMouseEvent('mousedown'));
+    expect(dispatchFakeEvent(document, 'wheel').defaultPrevented).toBe(true);
   });
 
 });
