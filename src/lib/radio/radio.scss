@@ -141,7 +141,9 @@ $mat-radio-ripple-radius: 20px;
     opacity: 0.04;
   }
 
-  .mat-radio-button.cdk-focused & {
+  // TODO(crisbeto): this is supposed to be for `cdk-program-focused` as well,
+  // however the focus monitor doesn't pick up clicking on label correctly.
+  .mat-radio-button.cdk-keyboard-focused & {
     opacity: 0.12;
   }
 
