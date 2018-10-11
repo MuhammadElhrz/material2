@@ -6,7 +6,7 @@
  * found in the LICENSE file at https://angular.io/license
  */
 
-import {Platform, supportsPassiveEventListeners} from '@angular/cdk/platform';
+import {Platform, normalizePassiveListenerOptions} from '@angular/cdk/platform';
 import {
   Directive,
   ElementRef,
@@ -247,7 +247,7 @@ export class FocusMonitor implements OnDestroy {
       document.addEventListener('keydown', documentKeydownListener, true);
       document.addEventListener('mousedown', documentMousedownListener, true);
       document.addEventListener('touchstart', documentTouchstartListener,
-          supportsPassiveEventListeners() ? ({passive: true, capture: true} as any) : true);
+          normalizePassiveListenerOptions({passive: true, capture: true}));
       window.addEventListener('focus', windowFocusListener);
     });
 
@@ -255,7 +255,7 @@ export class FocusMonitor implements OnDestroy {
       document.removeEventListener('keydown', documentKeydownListener, true);
       document.removeEventListener('mousedown', documentMousedownListener, true);
       document.removeEventListener('touchstart', documentTouchstartListener,
-          supportsPassiveEventListeners() ? ({passive: true, capture: true} as any) : true);
+          normalizePassiveListenerOptions({passive: true, capture: true}));
       window.removeEventListener('focus', windowFocusListener);
 
       // Clear timeouts for all potentially pending timeouts to prevent the leaks.
