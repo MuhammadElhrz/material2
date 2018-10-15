@@ -13,7 +13,7 @@ import {
   ApplicationRef,
   Injector,
 } from '@angular/core';
-import {BasePortalOutlet, ComponentPortal, TemplatePortal} from './portal';
+import {BasePortalOutlet, ComponentPortal, TemplatePortal, InlinePortal} from './portal';
 
 
 /**
@@ -91,6 +91,19 @@ export class DomPortalOutlet extends BasePortalOutlet {
 
     // TODO(jelbourn): Return locals from view.
     return viewRef;
+  }
+
+  attachInlinePortal(portal: InlinePortal) {
+    const origin = portal.origin;
+    const transferredNodes: Node[] = Array.from(origin.childNodes);
+
+    // TODO: somewhat slow. Takes 10ms+ on IE.
+    transferredNodes.forEach(node => this.outletElement.appendChild(node));
+
+    super.setDisposeFn(() => {
+      transferredNodes.forEach(node => portal.origin.appendChild(node));
+      transferredNodes.length = 0;
+    });
   }
 
   /**

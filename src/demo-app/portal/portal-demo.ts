@@ -6,8 +6,8 @@
  * found in the LICENSE file at https://angular.io/license
  */
 
-import {ComponentPortal, Portal, CdkPortal} from '@angular/cdk/portal';
-import {Component, QueryList, ViewChildren} from '@angular/core';
+import {ComponentPortal, Portal, CdkPortal, InlinePortal} from '@angular/cdk/portal';
+import {Component, QueryList, ViewChildren, ElementRef, ViewChild} from '@angular/core';
 
 
 @Component({
@@ -18,6 +18,7 @@ import {Component, QueryList, ViewChildren} from '@angular/core';
 })
 export class PortalDemo {
   @ViewChildren(CdkPortal) templatePortals: QueryList<Portal<any>>;
+  @ViewChild('inlinePortalSource') inlinePortalSource: ElementRef<HTMLElement>;
 
   selectedPortal: Portal<any>;
 
@@ -31,6 +32,10 @@ export class PortalDemo {
 
   get scienceJoke() {
     return new ComponentPortal(ScienceJoke);
+  }
+
+  get dadJoke() {
+    return new InlinePortal(this.inlinePortalSource);
   }
 }
 

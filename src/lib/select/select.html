@@ -15,21 +15,7 @@
   <div class="mat-select-arrow-wrapper"><div class="mat-select-arrow"></div></div>
 </div>
 
-<ng-template
-  cdk-connected-overlay
-  cdkConnectedOverlayLockPosition
-  cdkConnectedOverlayHasBackdrop
-  cdkConnectedOverlayBackdropClass="cdk-overlay-transparent-backdrop"
-  [cdkConnectedOverlayScrollStrategy]="_scrollStrategy"
-  [cdkConnectedOverlayOrigin]="origin"
-  [cdkConnectedOverlayOpen]="panelOpen"
-  [cdkConnectedOverlayPositions]="_positions"
-  [cdkConnectedOverlayMinWidth]="_triggerRect?.width"
-  [cdkConnectedOverlayOffsetY]="_offsetY"
-  (backdropClick)="close()"
-  (attach)="_onAttached()"
-  (detach)="close()">
-
+<div style="display: none;" #portalContent>
   <div
     #panel
     class="mat-select-panel {{ _getPanelTheme() }}"
@@ -41,4 +27,21 @@
     (keydown)="_handleKeydown($event)">
     <ng-content></ng-content>
   </div>
+</div>
+
+<ng-template
+  cdk-connected-overlay
+  cdkConnectedOverlayLockPosition
+  cdkConnectedOverlayHasBackdrop
+  cdkConnectedOverlayBackdropClass="cdk-overlay-transparent-backdrop"
+  [cdkConnectedOverlayPortal]="_portal"
+  [cdkConnectedOverlayScrollStrategy]="_scrollStrategy"
+  [cdkConnectedOverlayOrigin]="origin"
+  [cdkConnectedOverlayOpen]="panelOpen"
+  [cdkConnectedOverlayPositions]="_positions"
+  [cdkConnectedOverlayMinWidth]="_triggerRect?.width"
+  [cdkConnectedOverlayOffsetY]="_offsetY"
+  (backdropClick)="close()"
+  (attach)="_onAttached()"
+  (detach)="close()">
 </ng-template>

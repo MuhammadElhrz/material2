@@ -12,7 +12,8 @@ import {
   BasePortalOutlet,
   ComponentPortal,
   PortalHostDirective,
-  TemplatePortal
+  TemplatePortal,
+  InlinePortal
 } from '@angular/cdk/portal';
 import {DOCUMENT} from '@angular/common';
 import {
@@ -165,6 +166,15 @@ export class CdkDialogContainer extends BasePortalOutlet implements OnDestroy {
 
     this._savePreviouslyFocusedElement();
     return this._portalHost.attachTemplatePortal(portal);
+  }
+
+  attachInlinePortal(portal: InlinePortal) {
+    if (this._portalHost.hasAttached()) {
+      throwDialogContentAlreadyAttachedError();
+    }
+
+    this._savePreviouslyFocusedElement();
+    return this._portalHost.attachInlinePortal(portal);
   }
 
   /** Emit lifecycle events based on animation `start` callback. */

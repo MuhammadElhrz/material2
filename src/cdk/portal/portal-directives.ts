@@ -19,7 +19,7 @@ import {
   TemplateRef,
   ViewContainerRef,
 } from '@angular/core';
-import {BasePortalOutlet, ComponentPortal, Portal, TemplatePortal} from './portal';
+import {BasePortalOutlet, ComponentPortal, Portal, TemplatePortal, InlinePortal} from './portal';
 
 
 /**
@@ -154,6 +154,25 @@ export class CdkPortalOutlet extends BasePortalOutlet implements OnInit, OnDestr
     this.attached.emit(viewRef);
 
     return viewRef;
+  }
+
+  attachInlinePortal(portal: InlinePortal) {
+    portal.setAttachedHost(this);
+
+    const origin = portal.origin;
+    const transferredNodes: Node[] = [];
+    const nativeElement: Node = this._viewContainerRef.element.nativeElement;
+    const rootNode = nativeElement.nodeType === nativeElement.ELEMENT_NODE ?
+        nativeElement : nativeElement.parentNode!;
+
+    while (origin.firstChild) {
+      transferredNodes.push(rootNode.appendChild(origin.firstChild));
+    }
+
+    super.setDisposeFn(() => {
+      transferredNodes.forEach(node => portal.origin.appendChild(node));
+      transferredNodes.length = 0;
+    });
   }
 }
 

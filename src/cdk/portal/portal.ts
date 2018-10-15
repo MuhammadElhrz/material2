@@ -153,6 +153,16 @@ export class TemplatePortal<C = any> extends Portal<C> {
   }
 }
 
+export class InlinePortal extends Portal<HTMLElement> {
+  constructor(private _element: HTMLElement | ElementRef<HTMLElement>) {
+    super();
+  }
+
+  get origin(): HTMLElement {
+    return this._element instanceof ElementRef ? this._element.nativeElement : this._element;
+  }
+}
+
 
 /** A `PortalOutlet` is an space that can contain a single `Portal`. */
 export interface PortalOutlet {
@@ -213,6 +223,9 @@ export abstract class BasePortalOutlet implements PortalOutlet {
     } else if (portal instanceof TemplatePortal) {
       this._attachedPortal = portal;
       return this.attachTemplatePortal(portal);
+    } else if (portal instanceof InlinePortal) {
+      this._attachedPortal = portal;
+      return this.attachInlinePortal(portal);
     }
 
     throwUnknownPortalTypeError();
@@ -221,6 +234,8 @@ export abstract class BasePortalOutlet implements PortalOutlet {
   abstract attachComponentPortal<T>(portal: ComponentPortal<T>): ComponentRef<T>;
 
   abstract attachTemplatePortal<C>(portal: TemplatePortal<C>): EmbeddedViewRef<C>;
+
+  abstract attachInlinePortal(portal: InlinePortal): any;
 
   /** Detaches a previously attached portal. */
   detach(): void {

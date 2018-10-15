@@ -50,6 +50,7 @@ import {
   SimpleChanges,
   ViewChild,
   ViewEncapsulation,
+  AfterViewInit,
 } from '@angular/core';
 import {ControlValueAccessor, FormGroupDirective, NgControl, NgForm} from '@angular/forms';
 import {
@@ -90,6 +91,7 @@ import {
   getMatSelectNonArrayValueError,
   getMatSelectNonFunctionValueError,
 } from './select-errors';
+import { InlinePortal } from '@angular/cdk/portal';
 
 
 let nextUniqueId = 0;
@@ -222,8 +224,8 @@ export class MatSelectTrigger {}
     {provide: MAT_OPTION_PARENT_COMPONENT, useExisting: MatSelect}
   ],
 })
-export class MatSelect extends _MatSelectMixinBase implements AfterContentInit, OnChanges,
-    OnDestroy, OnInit, DoCheck, ControlValueAccessor, CanDisable, HasTabIndex,
+export class MatSelect extends _MatSelectMixinBase implements AfterContentInit, AfterViewInit,
+    OnChanges, OnDestroy, OnInit, DoCheck, ControlValueAccessor, CanDisable, HasTabIndex,
     MatFormFieldControl<any>, CanUpdateErrorState, CanDisableRipple {
   private _scrollStrategyFactory: () => ScrollStrategy;
 
@@ -312,6 +314,8 @@ export class MatSelect extends _MatSelectMixinBase implements AfterContentInit, 
     },
   ];
 
+  _portal: InlinePortal;
+
   /** Whether the component is disabling centering of the active option over the trigger. */
   private _disableOptionCentering: boolean = false;
 
@@ -336,6 +340,8 @@ export class MatSelect extends _MatSelectMixinBase implements AfterContentInit, 
 
   /** Panel containing the select options. */
   @ViewChild('panel') panel: ElementRef;
+
+  @ViewChild('portalContent') portalContent: ElementRef<HTMLElement>;
 
   /** Overlay pane containing the options. */
   @ViewChild(CdkConnectedOverlay) overlayDir: CdkConnectedOverlay;
@@ -535,6 +541,10 @@ export class MatSelect extends _MatSelectMixinBase implements AfterContentInit, 
       this._resetOptions();
       this._initializeSelection();
     });
+  }
+
+  ngAfterViewInit() {
+    this._portal = new InlinePortal(this.portalContent);
   }
 
   ngDoCheck() {

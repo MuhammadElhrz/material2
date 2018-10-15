@@ -26,6 +26,7 @@ import {
   ComponentPortal,
   TemplatePortal,
   CdkPortalOutlet,
+  InlinePortal,
 } from '@angular/cdk/portal';
 import {BreakpointObserver, Breakpoints} from '@angular/cdk/layout';
 import {MatBottomSheetConfig} from './bottom-sheet-config';
@@ -120,6 +121,13 @@ export class MatBottomSheetContainer extends BasePortalOutlet implements OnDestr
     this._setPanelClass();
     this._savePreviouslyFocusedElement();
     return this._portalOutlet.attachTemplatePortal(portal);
+  }
+
+  attachInlinePortal(portal: InlinePortal) {
+    this._validatePortalAttached();
+    this._setPanelClass();
+    this._savePreviouslyFocusedElement();
+    return this._portalOutlet.attachInlinePortal(portal);
   }
 
   /** Begin animation of bottom sheet entrance into view. */
