@@ -51,14 +51,18 @@ export const MAT_ICON_LOCATION = new InjectionToken<MatIconLocation>('mat-icon-l
  * @docs-private
  */
 export interface MatIconLocation {
-  pathname: string;
+  getPathname: () => string;
 }
 
 /** @docs-private */
 export function MAT_ICON_LOCATION_FACTORY(): MatIconLocation {
   const _document = inject(DOCUMENT);
-  const pathname = (_document && _document.location && _document.location.pathname) || '';
-  return {pathname};
+
+  return {
+    // Note that this needs to be a function, rather than a property, because Angular
+    // will only resolve it once, but we want the current path on each call.
+    getPathname: () => (_document && _document.location && _document.location.pathname) || ''
+  };
 }
 
 
@@ -324,7 +328,7 @@ export class MatIcon extends _MatIconMixinBase implements OnChanges, OnInit, Can
     }
 
     const elementsWithFuncIri = element.querySelectorAll(funcIriAttributeSelector);
-    const path = this._location.pathname ? this._location.pathname.split('#')[0] : '';
+    const path = this._location.getPathname().split('#')[0];
 
     for (let i = 0; i < elementsWithFuncIri.length; i++) {
       funcIriAttributes.forEach(attr => {
